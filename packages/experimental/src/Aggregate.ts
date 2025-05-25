@@ -7,7 +7,7 @@ import type * as Event from "./Event.ts"
  * @template S The type of the aggregate's state.
  * @template E The type of the events that can be applied to the aggregate.
  */
-export interface Aggregate<S, E extends Event.Any> {
+export interface Aggregate<S, E extends Event.Event.Any> {
   /**
    * The unique identifier of the aggregate.
    */
