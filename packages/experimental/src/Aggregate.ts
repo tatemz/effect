@@ -1,8 +1,7 @@
 import * as Option from "effect/Option"
 import type * as Event from "./Event.js"
-import type { Handler } from "./Machine/Procedure.js"
 
-type Aggregate<State, Events extends Event.Event.Any> = {
+export type Aggregate<State, Events extends Event.Event.Any> = {
   readonly id: string
   readonly state: Option.Option<State>
   readonly version: number
@@ -13,6 +12,12 @@ type Handler<State, Events extends Event.Event.Any> = (
   state: State,
   event: Event.Event.TaggedPayload<Events>
 ) => State
+
+namespace Handler {
+  export type Any = Handler<any, Event.Event.Any>
+  export type State<H extends Any> = H extends Handler<infer S, Event.Event.Any> ? S : never
+  export type Event<H extends Any> = H extends Handler<any, infer E> ? E : never
+}
 
 type Handlers<State, Events extends Event.Event.Any> = {
   [K in Events as K["tag"]]: Handler<State, K>
@@ -80,14 +85,33 @@ export const withHandlers = <H extends Handlers.Any>(
   return builder as AggregateBuilder<AggregateBuilder.State<A>, H>
 }
 
+export const addHandler = <State, E extends Event.Event.Any>(
+  event: E,
+  handler: Handler<State, E>
+) =>
+<A extends AggregateBuilder.Any>(
+  aggregateBuilder: A
+): AggregateBuilder<
+  AggregateBuilder.State<A>,
+  AggregateBuilder.Handlers<A> & { [K in E["tag"]]: Handler<AggregateBuilder.State<A>, E> }
+> => {
+  const builder = Object.create(AggregateBuilderProto)
+  builder.getInitialState = aggregateBuilder.getInitialState
+  builder.handlers = {
+    ...aggregateBuilder.handlers,
+    [event.tag]: handler
+  }
+  return builder
+}
+
 type EnsureStateAndHandlersAreCompatible<A extends AggregateBuilder.Any> = [AggregateBuilder.State<A>] extends
   [Handlers.State<AggregateBuilder.Handlers<A>>] ? A :
   `The state ${AggregateBuilder.State<A>} is not compatible with the handlers`
 
 type AggregateReducer<State, Events extends Event.Event.Any> = {
-  readonly apply: <Tag extends Events["tag"]>(
-    tag: Tag,
-    payload: Event.Event.Payload<Event.Event.WithTag<Events, Tag>>
+  readonly apply: <E extends Events>(
+    event: E,
+    payload: Event.Event.Payload<E>
   ) => (aggregate: Aggregate<State, Events>) => Aggregate<State, Events>
 }
 
@@ -101,20 +125,23 @@ namespace AggregateReducer {
 export const build = <A extends AggregateBuilder.Any>(
   aggregateBuilder: EnsureStateAndHandlersAreCompatible<A>
 ): AggregateReducer.FromAggregateBuilder<A> => {
+  type S = AggregateBuilder.State<A>
+  type H = AggregateBuilder.Handlers<A>
+
   return {
-    apply: (tag, payload) => (aggregate) => {
-      const builder = aggregateBuilder as AggregateBuilder<
-        AggregateBuilder.State<A>,
-        AggregateBuilder.Handlers<A>
-      >
-      const handler = builder.handlers[tag]
+    apply: <E extends AggregateBuilder.Events<A>>(
+      event: E,
+      payload: Event.Event.Payload<E>
+    ) =>
+    (aggregate) => {
+      const builder = aggregateBuilder as AggregateBuilder<S, H>
+      const handler = builder.handlers[event.tag] as Handler<S, E>
+
       const state = aggregate.state.pipe(
         Option.getOrElse(() => builder.getInitialState())
       )
-      const taggedPayload = {
-        _tag: tag,
-        payload
-      }
+
+      const taggedPayload = { _tag: event.tag, payload } as Event.Event.TaggedPayload<E>
       const newState = handler(state, taggedPayload)
 
       return {

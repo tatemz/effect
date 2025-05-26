@@ -1,0 +1,22 @@
+
+> @effect/experimental@0.46.7 check /Users/tbarber/dev/Effect-TS/effect/packages/experimental
+> tsc -b tsconfig.json
+
+src/Aggregate.ts(3,15): error TS2440: Import declaration conflicts with local declaration of 'Handler'.
+src/Aggregate.ts(105,30): error TS2322: Type '(aggregate: Aggregate<State<A>, Event<Handlers<A>>>) => { id: string; state: Option<any>; version: number; uncommittedChanges: ({ ...; } | TaggedPayload<...>)[]; }' is not assignable to type '(aggregate: Aggregate<State<A>, Event<Handlers<A>>>) => Aggregate<State<A>, Event<Handlers<A>>>'.
+  Call signature return types '{ id: string; state: Option<any>; version: number; uncommittedChanges: ({ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<...>)[]; }' and 'Aggregate<State<A>, Event<Handlers<A>>>' are incompatible.
+    The types of 'uncommittedChanges' are incompatible between these types.
+      Type '({ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<Event<Handlers<A>>>)[]' is not assignable to type 'readonly TaggedPayload<Event<Handlers<A>>>[]'.
+        Type '{ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<Event<Handlers<A>>>' is not assignable to type 'TaggedPayload<Event<Handlers<A>>>'.
+          Type '{ _tag: Tag; payload: Schema.Type<Event.Event.PayloadSchema<Extract<Handlers.Event<AggregateBuilder.Handlers<A>>, { readonly tag: Tag; }>>>; }' is not assignable to type 'TaggedPayload<Event<Handlers<A>>>'.
+src/Aggregate.ts(118,39): error TS2345: Argument of type '{ _tag: Tag; payload: Schema.Type<Event.Event.PayloadSchema<Extract<Handlers.Event<AggregateBuilder.Handlers<A>>, { readonly tag: Tag; }>>>; }' is not assignable to parameter of type 'never'.
+test/Aggregate.test.ts(25,65): error TS2345: Argument of type '{ value: number; }' is not assignable to parameter of type 'never'.
+src/Aggregate.ts(3,15): error TS2440: Import declaration conflicts with local declaration of 'Handler'.
+src/Aggregate.ts(105,30): error TS2322: Type '(aggregate: Aggregate<State<A>, Event<Handlers<A>>>) => { id: string; state: Option<any>; version: number; uncommittedChanges: ({ ...; } | TaggedPayload<...>)[]; }' is not assignable to type '(aggregate: Aggregate<State<A>, Event<Handlers<A>>>) => Aggregate<State<A>, Event<Handlers<A>>>'.
+  Call signature return types '{ id: string; state: Option<any>; version: number; uncommittedChanges: ({ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<...>)[]; }' and 'Aggregate<State<A>, Event<Handlers<A>>>' are incompatible.
+    The types of 'uncommittedChanges' are incompatible between these types.
+      Type '({ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<Event<Handlers<A>>>)[]' is not assignable to type 'readonly TaggedPayload<Event<Handlers<A>>>[]'.
+        Type '{ _tag: Tag; payload: Type<PayloadSchema<Extract<Event<Handlers<A>>, { readonly tag: Tag; }>>>; } | TaggedPayload<Event<Handlers<A>>>' is not assignable to type 'TaggedPayload<Event<Handlers<A>>>'.
+          Type '{ _tag: Tag; payload: Schema.Type<Event.Event.PayloadSchema<Extract<Handlers.Event<AggregateBuilder.Handlers<A>>, { readonly tag: Tag; }>>>; }' is not assignable to type 'TaggedPayload<Event<Handlers<A>>>'.
+src/Aggregate.ts(118,39): error TS2345: Argument of type '{ _tag: Tag; payload: Schema.Type<Event.Event.PayloadSchema<Extract<Handlers.Event<AggregateBuilder.Handlers<A>>, { readonly tag: Tag; }>>>; }' is not assignable to parameter of type 'never'.
+ ELIFECYCLE  Command failed with exit code 2.
