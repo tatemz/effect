@@ -18,10 +18,10 @@ overrides:
 
 patchedDependencies:
   '@changesets/assemble-release-plan':
-    hash: 54e23ad3c1051b22730e4fec75bde0ca8c22beff7174c8af93e35d1188ea381a
+    hash: spd4exup7olsi2ydeo46r2prba
     path: patches/@changesets__assemble-release-plan.patch
   '@changesets/get-github-info@0.6.0':
-    hash: 1387c42d40315dc7805094fb3085da092ec802de277560db46fb53567ba583ec
+    hash: 4nwpuevfciovsbhi25hd4g5r7y
     path: patches/@changesets__get-github-info@0.6.0.patch
 
 importers:
@@ -314,6 +314,9 @@ importers:
       '@effect/platform':
         specifier: workspace:^
         version: link:../platform
+      '@effect/typeclass':
+        specifier: workspace:^
+        version: link:../typeclass
       effect:
         specifier: workspace:^
         version: link:../effect
@@ -8717,7 +8720,7 @@ snapshots:
       resolve-from: 5.0.0
       semver: 7.7.1
 
-  '@changesets/assemble-release-plan@6.0.8(patch_hash=54e23ad3c1051b22730e4fec75bde0ca8c22beff7174c8af93e35d1188ea381a)':
+  '@changesets/assemble-release-plan@6.0.8(patch_hash=spd4exup7olsi2ydeo46r2prba)':
     dependencies:
       '@changesets/errors': 0.2.0
       '@changesets/get-dependents-graph': 2.1.3
@@ -8732,7 +8735,7 @@ snapshots:
 
   '@changesets/changelog-github@0.5.1':
     dependencies:
-      '@changesets/get-github-info': 0.6.0(patch_hash=1387c42d40315dc7805094fb3085da092ec802de277560db46fb53567ba583ec)
+      '@changesets/get-github-info': 0.6.0(patch_hash=4nwpuevfciovsbhi25hd4g5r7y)
       '@changesets/types': 6.1.0
       dotenv: 8.6.0
     transitivePeerDependencies:
@@ -8741,7 +8744,7 @@ snapshots:
   '@changesets/cli@2.29.4':
     dependencies:
       '@changesets/apply-release-plan': 7.0.12
-      '@changesets/assemble-release-plan': 6.0.8(patch_hash=54e23ad3c1051b22730e4fec75bde0ca8c22beff7174c8af93e35d1188ea381a)
+      '@changesets/assemble-release-plan': 6.0.8(patch_hash=spd4exup7olsi2ydeo46r2prba)
       '@changesets/changelog-git': 0.2.1
       '@changesets/config': 3.1.1
       '@changesets/errors': 0.2.0
@@ -8790,7 +8793,7 @@ snapshots:
       picocolors: 1.1.1
       semver: 7.7.1
 
-  '@changesets/get-github-info@0.6.0(patch_hash=1387c42d40315dc7805094fb3085da092ec802de277560db46fb53567ba583ec)':
+  '@changesets/get-github-info@0.6.0(patch_hash=4nwpuevfciovsbhi25hd4g5r7y)':
     dependencies:
       dataloader: 1.4.0
       node-fetch: 2.7.0
@@ -8799,7 +8802,7 @@ snapshots:
 
   '@changesets/get-release-plan@4.0.12':
     dependencies:
-      '@changesets/assemble-release-plan': 6.0.8(patch_hash=54e23ad3c1051b22730e4fec75bde0ca8c22beff7174c8af93e35d1188ea381a)
+      '@changesets/assemble-release-plan': 6.0.8(patch_hash=spd4exup7olsi2ydeo46r2prba)
       '@changesets/config': 3.1.1
       '@changesets/pre': 2.0.2
       '@changesets/read': 0.6.5
