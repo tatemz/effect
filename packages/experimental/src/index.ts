@@ -72,3 +72,8 @@ export * as Sse from "./Sse.js"
  * @since 1.0.0
  */
 export * as VariantSchema from "./VariantSchema.js"
+
+/**
+ * @since 1.0.0
+ */
+export * from "./AggregateReducerBuilder.js";
