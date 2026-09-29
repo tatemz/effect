@@ -16,6 +16,11 @@ const TestGroup = RpcGroup.make(
   Rpc.make("Events", { success: RpcSchema.Stream(Schema.String, Schema.Never) })
 )
 
+const SharedSocketGroup = RpcGroup.make(
+  Rpc.make("Bad", { success: RpcSchema.Stream(Schema.Int.check(Schema.isLessThan(3)), Schema.Never) }),
+  Rpc.make("Good", { success: RpcSchema.Stream(Schema.Int, Schema.Never) })
+)
+
 const makeHttpClient = (body: string): HttpClient.HttpClient =>
   HttpClient.make((request) =>
     Effect.succeed(
@@ -81,6 +86,79 @@ describe("RpcClient", () => {
         assert(Exit.isFailure(readExit) && Cause.hasInterruptsOnly(readExit.cause))
       }))
   }
+
+  it.effect("isolates stream decode failures on a shared socket", () =>
+    Effect.gen(function*() {
+      const incoming = yield* Queue.unbounded<string>()
+      const goodValueReceived = yield* Deferred.make<void>()
+      const interrupts: Array<string | number> = []
+      let badRequestId: string | number | undefined
+      let goodRequestId: string | number | undefined
+
+      const write = (chunk: Uint8Array | string | Socket.CloseEvent) =>
+        Effect.sync(() => {
+          if (Socket.isCloseEvent(chunk)) return
+          const message = JSON.parse(
+            (typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk)).trim()
+          ) as {
+            readonly _tag: string
+            readonly id?: string | number
+            readonly tag?: string
+            readonly requestId?: string | number
+          }
+          if (message._tag === "Request" && message.id !== undefined) {
+            if (message.tag === "Bad") badRequestId = message.id
+            if (message.tag === "Good") goodRequestId = message.id
+            if (badRequestId !== undefined && goodRequestId !== undefined) {
+              Queue.offerUnsafe(
+                incoming,
+                JSON.stringify({ _tag: "Chunk", requestId: badRequestId, values: [3] }) + "\n"
+              )
+              Queue.offerUnsafe(
+                incoming,
+                JSON.stringify({ _tag: "Chunk", requestId: goodRequestId, values: [0] }) + "\n"
+              )
+            }
+          } else if (message._tag === "Interrupt" && message.requestId !== undefined) {
+            interrupts.push(message.requestId)
+          }
+        })
+
+      const socket = Socket.make({
+        reader: Effect.succeed({
+          pull: Queue.take(incoming).pipe(Effect.map((frame) => [frame] as const)),
+          upgrade: Socket.SocketUpgradeError.unsupported
+        }),
+        writer: Effect.succeed({
+          write,
+          writeAll: (chunks) => Effect.forEach(chunks, write, { discard: true })
+        })
+      })
+      const protocol = yield* RpcClient.makeProtocolSocket().pipe(
+        Effect.provideService(Socket.Socket, socket),
+        Effect.provide(RpcSerialization.layerNdjson)
+      )
+      const client = yield* RpcClient.make(SharedSocketGroup).pipe(
+        Effect.provideService(RpcClient.Protocol, protocol)
+      )
+      const goodFiber = yield* client.Good().pipe(
+        Stream.runForEach(() => Deferred.succeed(goodValueReceived, void 0).pipe(Effect.asVoid)),
+        Effect.forkChild
+      )
+      const badFiber = yield* client.Bad().pipe(Stream.runDrain, Effect.exit, Effect.forkChild)
+
+      const badExit = yield* Fiber.join(badFiber)
+      assert(Exit.isFailure(badExit))
+      const goodResult = yield* Effect.raceFirst(
+        Deferred.await(goodValueReceived).pipe(Effect.as("value" as const)),
+        Fiber.await(goodFiber).pipe(Effect.as("exit" as const))
+      )
+      assert.deepStrictEqual(
+        { goodResult, interrupts },
+        { goodResult: "value", interrupts: [badRequestId!] }
+      )
+      assert.isUndefined(goodFiber.pollUnsafe())
+    }))
 
   it.effect("releases a worker pool slot when the worker run fails", () =>
     Effect.gen(function*() {
